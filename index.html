@@ -246,6 +246,20 @@ section{animation:fi .25s ease}
 <label style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="g_st" checked style="width:auto;margin:0"> Masukkan ikan boleh jual ke stok boleh jual</label>
 <div class="row"><div><label>Anggaran kg boleh jual</label><input id="g_kg" type="number" inputmode="decimal" step="0.1" oninput="GKM=true"></div><div><label>1 sauk ≈ (kg)</label><input id="g_rs" type="number" inputmode="decimal" oninput="gCalc()"></div></div>
 <button class="btn" onclick="gSave()">Simpan hasil greding</button><button class="btn g" onclick="gClose()">Batal</button></div></div>
+<div id="eem" class="ov"><div class="bx" style="max-width:400px;text-align:left;max-height:90vh;overflow-y:auto">
+<h2 style="margin:0 0 4px;font-size:17px">✏️ Edit belanja</h2>
+<label>Jenis belanja</label><select id="ee_c"></select>
+<label>Jumlah (RM)</label><input id="ee_a" type="number" inputmode="decimal" step="0.01">
+<label>Tarikh</label><input id="ee_d" type="date">
+<label>Catatan (pilihan)</label><input id="ee_n" placeholder="Cth: Pelet 2 uncang">
+<button class="btn" onclick="eeSave()">Simpan perubahan</button><button class="btn g" onclick="eeClose()">Batal</button></div></div>
+<div id="ebm" class="ov"><div class="bx" style="max-width:400px;text-align:left;max-height:90vh;overflow-y:auto">
+<h2 style="margin:0 0 4px;font-size:17px">✏️ Edit benih</h2>
+<label>Jenis ikan</label><div class="seg"><button id="eb_Keli" onclick="ebSet('Keli')">Keli</button><button id="eb_Patin" onclick="ebSet('Patin')">Patin</button></div>
+<div class="row"><div><label>Bilangan (ribu ekor)</label><input id="eb_r" type="number" inputmode="decimal" step="0.1" oninput="ebCalc()"></div><div><label>Petak/sangkar</label><input id="eb_p" list="pl" placeholder="Cth: A1"></div></div>
+<label>Tarikh masuk</label><input id="eb_d" type="date">
+<div class="tot" id="eb_t"></div>
+<button class="btn" onclick="ebSave()">Simpan perubahan</button><button class="btn g" onclick="ebClose()">Batal</button></div></div>
 <div id="ts"></div>
 <nav>
 <button class="on" onclick="tab('jual',this)"><span>🐟</span>Jualan</button>
@@ -285,7 +299,7 @@ function draw(){var o=stats();$('mn').textContent=MS[M.getMonth()]+' '+M.getFull
 $('s_kg').textContent=r1(o.w.Saya.kg)+' kg';$('s_sl').textContent=rm(o.w.Saya.sl);$('s_ex').textContent=rm(o.ex);
 var n=o.sl-o.ex,ns=o.w.Saya.sl-o.ex;$('s_nt').textContent=rm(ns);$('s_nt').className=ns>=0?'ok':'bad';
 $('ls').innerHTML=salesList(o.SF);
-$('le').innerHTML=o.E.length?o.E.map(function(x){return '<div class="it"><div class="ic">'+x.c.split(' ')[0]+'</div><div class="m"><b>'+x.c.split(' ').slice(1).join(' ')+'</b><span>'+fd(x.d)+(x.n?' · '+esc(x.n):'')+'</span></div><div class="a bad">-'+rm(x.a)+'</div>'+(x.si?'<span style="font-size:11px;color:var(--mu);padding:0 6px">🔗 Stok</span>':'<button class="x" onclick="del(\'e\','+x.id+')">✕</button>')+'</div>'}).join(''):'<div class="em">Belum ada belanja bulan ini</div>';
+$('le').innerHTML=o.E.length?o.E.map(function(x){return '<div class="it'+(x.id==LASTE?' flash':'')+'" id="e_'+x.id+'"><div class="ic">'+x.c.split(' ')[0]+'</div><div class="m"><b>'+x.c.split(' ').slice(1).join(' ')+'</b><span>'+fd(x.d)+(x.n?' · '+esc(x.n):'')+'</span></div><div class="a bad">-'+rm(x.a)+'</div>'+(x.si?'<span style="font-size:11px;color:var(--mu);padding:0 6px">🔗 Stok</span>':'<button class="x" onclick="eeOpen('+x.id+')">✏️</button><button class="x" onclick="del(\'e\','+x.id+')">✕</button>')+'</div>'}).join(''):'<div class="em">Belum ada belanja bulan ini</div>';
 var W=o.w.Saya,h='<div class="rw"><span>Jumlah ikan terjual (saya)</span><b>'+r1(W.kg)+' kg</b></div>';
 [['Keli','var(--keli)'],['Patin','var(--patin)']].forEach(function(a){var kg=W.j[a[0]],t=(W.m||{})[a[0]]||0,p=W.kg?kg/W.kg*100:0;h+='<div class="rw"><span>'+a[0]+'</span><span>'+r1(kg)+' kg · '+rm(t)+'</span></div><div class="bar"><i style="width:'+p+'%;background:'+a[1]+'"></i></div>'});
 h+='<div class="rw"><span>Jumlah jualan saya</span><b class="ok">'+rm(W.sl)+'</b></div><hr style="border:0;border-top:1px solid var(--ln)"><b>Belanja</b>';
@@ -519,6 +533,19 @@ var ei=0;if(stk){ei=now+50;D.i.push({id:ei,d:gd,j:GJ,kg:kg,src:'Greding',n:'Luba
 D.l=D.l||[];D.l.push({id:lid,l:GL,j:GJ,d:gd,prev:pv,tot:tot,jual:jl>0?jl:0,baki:bk,bl:bl,ei:ei});
 save();gClose();LASTE=null;kFil(0);toast('Hasil greding disimpan ✓'+(stk?' Stok boleh jual +'+r1(kg)+' kg':''))}
 function lDel(id){ask('Padam rekod sejarah greding ini? (Stok dan lubang tidak berubah)',function(){D.l=(D.l||[]).filter(function(x){return x.id!=id});save();kDraw();toast('Rekod dipadam')})}
+var EEI=null,EBI=null,EBJ='Keli';
+function eeOpen(id){var x=D.e.filter(function(y){return y.id==id})[0];if(!x||x.si)return;EEI=id;var cs=BASE.concat(D.cats);if(cs.indexOf(x.c)<0)cs.push(x.c);$('ee_c').innerHTML=cs.map(function(c){return '<option'+(c==x.c?' selected':'')+'>'+esc(c)+'</option>'}).join('');$('ee_a').value=x.a;$('ee_d').value=x.d;$('ee_n').value=x.n||'';$('eem').classList.add('on')}
+function eeClose(){$('eem').classList.remove('on');EEI=null}
+function eeSave(){var a=+$('ee_a').value;if(!(a>0)){toast('Sila isi jumlah belanja.');return}var id=EEI,r={id:id,d:$('ee_d').value||td(),c:$('ee_c').value,a:a,n:$('ee_n').value.trim()};
+D.e=D.e.map(function(x){return x.id==id?r:x});save();eeClose();var p=r.d.slice(0,7);if(p!=pre()){var q=p.split('-');M=new Date(+q[0],+q[1]-1,1)}
+LASTE=id;setTimeout(function(){LASTE=null},4000);draw();var e=$('e_'+id);if(e)e.scrollIntoView({behavior:'smooth',block:'center'});toast('Belanja dikemas kini ✓')}
+function ebSet(j){EBJ=j;['Keli','Patin'].forEach(function(k){$('eb_'+k).classList.toggle('on',k==j)})}
+function ebCalc(){$('eb_t').textContent='= '+((+$('eb_r').value||0)*1000).toLocaleString('en-MY')+' ekor'}
+function ebOpen(id){var x=D.b.filter(function(y){return y.id==id})[0];if(!x)return;EBI=id;ebSet(x.j);$('eb_r').value=x.r;$('eb_p').value=x.p||'';$('eb_d').value=x.d;ebCalc();$('ebm').classList.add('on')}
+function ebClose(){$('ebm').classList.remove('on');EBI=null}
+function ebSave(){var r=+$('eb_r').value;if(!(r>0)){toast('Sila isi bilangan benih (ribu).');return}var id=EBI,n={id:id,d:$('eb_d').value||td(),j:EBJ,r:r,p:$('eb_p').value.trim()};
+D.b=D.b.map(function(x){return x.id==id?n:x});save();ebClose();var p=n.d.slice(0,7);if(p!=pre()){var q=p.split('-');M=new Date(+q[0],+q[1]-1,1)}
+LASTE=id;setTimeout(function(){LASTE=null},4000);draw();var e=$('b_'+id);if(e)e.scrollIntoView({behavior:'smooth',block:'center'});toast('Benih dikemas kini ✓')}
 function ayahCard(q){var A=q.w.Ayah,m=A.m||{Keli:0,Patin:0};$('ra').innerHTML='<div style="font-size:12px;color:var(--mu);margin-bottom:6px">'+MS[M.getMonth()]+' '+M.getFullYear()+'</div>'+['Keli','Patin'].map(function(j){return '<div class="rw"><span>'+j+'</span><span>'+r1(A.j[j])+' kg · '+rm(m[j])+'</span></div>'}).join('')+'<div class="rw"><span>Jumlah ikan terjual</span><b>'+r1(A.kg)+' kg</b></div><div class="tot" style="margin-top:8px">Jumlah jualan: '+rm(A.sl)+'</div>'}
 var II=null,IK=null,IS='Greding',IJ='Keli';
 function iRs(){var v=0;try{v=+localStorage.getItem('kgSauk')}catch(e){}return v>0?v:20}
@@ -572,7 +599,7 @@ function setO(o){O=o;$('o_saya').classList.toggle('on',o=='Saya');$('o_ayah').cl
 function setF(f){FO=f;['Semua','Saya','Ayah'].forEach(function(k){$('f_'+k).classList.toggle('on',k==f)});draw()}
 function xs(){var B=mine(D.b),G=mine(D.g),o={B:B,G:G,bj:{Keli:0,Patin:0},br:0,gp:{},gk:0};B.forEach(function(x){o.bj[x.j]+=x.r;o.br+=x.r});G.forEach(function(x){var p=x.p||'Tanpa petak';o.gp[p]=o.gp[p]||{Keli:0,Patin:0};o.gp[p][x.j]+=x.k;o.gk+=x.k});return o}
 function drawX(){var o=xs(),q=stats();kDraw();invDraw();ayahCard(q);fp();fc();dayCard(q);$('wc').innerHTML=['Saya','Ayah'].map(function(n){var w=q.w[n];return '<div class="rw"><span><i class="tg '+(n=='Ayah'?'ay':'sy')+'" style="margin:0 8px 0 0">'+n+'</i>'+r1(w.kg)+' kg</span><b>'+rm(w.sl)+'</b></div>'}).join('');$('wc').insertAdjacentHTML('beforeend',stokLine());$('tb').textContent=r1(o.br)+' ribu';
-$('lb').innerHTML=o.B.length?o.B.map(function(x){return '<div class="it"><div class="ic">🌱</div><div class="m"><b>'+x.j+' · '+r1(x.r)+' ribu</b><span>'+fd(x.d)+' · '+(x.r*1000).toLocaleString('en-MY')+' ekor'+(x.p?' · Petak '+esc(x.p):'')+'</span></div><button class="x" onclick="del(\'b\','+x.id+')">✕</button></div>'}).join(''):'<div class="em">Belum ada benih bulan ini</div>';
+$('lb').innerHTML=o.B.length?o.B.map(function(x){return '<div class="it'+(x.id==LASTE?' flash':'')+'" id="b_'+x.id+'"><div class="ic">🌱</div><div class="m"><b>'+x.j+' · '+r1(x.r)+' ribu</b><span>'+fd(x.d)+' · '+(x.r*1000).toLocaleString('en-MY')+' ekor'+(x.p?' · Petak '+esc(x.p):'')+'</span></div><button class="x" onclick="ebOpen('+x.id+')">✏️</button><button class="x" onclick="del(\'b\','+x.id+')">✕</button></div>'}).join(''):'<div class="em">Belum ada benih bulan ini</div>';
 var h='<hr style="border:0;border-top:1px solid var(--ln);margin:14px 0 8px"><b>🌱 Benih dimasukkan</b><div class="rw"><span>Keli</span><span>'+r1(o.bj.Keli)+' ribu</span></div><div class="rw"><span>Patin</span><span>'+r1(o.bj.Patin)+' ribu</span></div><div class="rw"><span>Jumlah</span><b>'+r1(o.br)+' ribu ekor</b></div>';
 if(o.G.length){h+='<hr style="border:0;border-top:1px solid var(--ln);margin:8px 0"><b>📦 Pengkelasan ikan (ikut petak)</b>';
 var ks=Object.keys(o.gp).sort();h+=ks.length?ks.map(function(p){var v=o.gp[p];return '<div class="rw"><span>Petak '+esc(p)+'</span><span>'+(v.Keli?'Keli '+r1(v.Keli)+' kg':'')+(v.Keli&&v.Patin?' · ':'')+(v.Patin?'Patin '+r1(v.Patin)+' kg':'')+'</span></div>'}).join(''):'<div class="em">Tiada pengkelasan</div>';
