@@ -381,34 +381,28 @@ var n=d.getNumberOfPages(),nw=new Date(),stamp=fdf(td())+' '+String(nw.getHours(
 for(var i=1;i<=n;i++){d.setPage(i);if(i>1&&!full[i]){fl(T);d.rect(0,0,W,4,'F');d.setFont('helvetica','bold');d.setFontSize(12);tx(DK);d.text(co,m,11);d.setFontSize(9.5);tx(T);d.text('SENARAI JUALAN  |  '+mon+'  |  Penjual: '+ps[i],W-m,11,R('r'));d.setDrawColor(T[0],T[1],T[2]);d.setLineWidth(0.4);d.line(m,14,W-m,14)}
 d.setDrawColor(200,215,218);d.setLineWidth(0.3);d.line(m,285,W-m,285);d.setFont('helvetica','normal');d.setFontSize(7.5);tx(GR);d.text(co+'  |  '+ADDR,m,290);d.text('Dijana '+stamp+'  |  Halaman '+i+'/'+n,W-m,290,R('r'))}
 pdfSave(d,'Senarai-Jualan-'+pre()+(FO=='Semua'?'':'-'+FO)+'.pdf')}
-async function bp(){var J=window.jspdf&&window.jspdf.jsPDF;if(!J){toast('PDF belum sedia, cuba sebentar lagi.');return}
-var d=new J({unit:'mm',format:'a5'}),W=148,m=12,y,tot=0,kg=0,co=D.shop||'Abengoh Legacy',T=[14,124,134],DK=[10,64,74],LT=[238,246,247],GR=[110,125,130];
-function tx(c){d.setTextColor(c[0],c[1],c[2])}
-function fl(c){d.setFillColor(c[0],c[1],c[2])}
-fl(T);d.rect(0,0,W,5,'F');
-d.setFont('helvetica','bold');d.setFontSize(17);tx(DK);d.text(co,m,19);
-d.setFont('helvetica','normal');d.setFontSize(8);tx(GR);d.text(d.splitTextToSize(ADDR,70),m,25);
-d.setFont('helvetica','bold');d.setFontSize(19);tx(T);d.text('BIL JUALAN',W-m,19,{align:'right'});
-d.setDrawColor(T[0],T[1],T[2]);d.setLineWidth(0.6);d.line(m,33,W-m,33);
-d.setFontSize(7.5);tx(GR);d.text('KEPADA',m,42);d.text('NO. BIL',98,42);d.text('TARIKH',98,55);
-d.setFontSize(12);tx(DK);var nm=d.splitTextToSize(BL.n||'Pelanggan',80);d.text(nm,m,48);
-if(BL.t){d.setFont('helvetica','normal');d.setFontSize(9);tx(GR);d.text('Tel: '+BL.t,m,48+nm.length*5+1)}
-d.setFont('helvetica','bold');d.setFontSize(10);tx(DK);d.text(BL.no,98,48);d.text(fdf(BL.d),98,61);
-y=70;fl(T);d.rect(m,y,W-2*m,8,'F');d.setFontSize(8);d.setTextColor(255,255,255);
-d.text('#',m+3,y+5.4);d.text('BUTIRAN',m+11,y+5.4);d.text('KG',84,y+5.4,{align:'right'});d.text('HARGA/KG (RM)',112,y+5.4,{align:'right'});d.text('JUMLAH (RM)',W-m-3,y+5.4,{align:'right'});
-y+=8;d.setFont('helvetica','normal');d.setFontSize(9.5);
-BL.L.forEach(function(x,i){if(y>160){d.addPage();y=20}var a=x.k*x.h;tot+=a;kg+=x.k;
-if(i%2==0){fl(LT);d.rect(m,y,W-2*m,9,'F')}
-tx([40,50,55]);d.text(String(i+1),m+3,y+6);d.text('Ikan '+x.j,m+11,y+6);d.text(String(r1(x.k)),84,y+6,{align:'right'});d.text(n2(x.h),112,y+6,{align:'right'});d.text(n2(a),W-m-3,y+6,{align:'right'});y+=9});
-d.setDrawColor(T[0],T[1],T[2]);d.setLineWidth(0.3);d.line(m,y,W-m,y);
-y+=7;d.setFontSize(9);tx(GR);d.text('Jumlah kuantiti',68,y);tx([40,50,55]);d.text(r1(kg)+' kg',W-m-3,y,{align:'right'});
-y+=4;fl(T);d.rect(64,y,W-m-64,12,'F');d.setTextColor(255,255,255);d.setFont('helvetica','bold');d.setFontSize(8.5);d.text('JUMLAH BESAR',68,y+7.6);d.setFontSize(12.5);d.text(rm(tot),W-m-4,y+8,{align:'right'});
-y+=22;
-if(D.pay){var pl=d.splitTextToSize(D.pay,W-2*m-10),h=11+pl.length*4.6;fl(LT);d.rect(m,y,W-2*m,h,'F');fl(T);d.rect(m,y,1.6,h,'F');d.setFontSize(7.5);tx(T);d.text('MAKLUMAT BAYARAN',m+6,y+6);d.setFont('helvetica','normal');d.setFontSize(9.5);tx([40,50,55]);d.text(pl,m+6,y+11.5)}
-d.setDrawColor(200,215,218);d.setLineWidth(0.3);d.line(m,190,W-m,190);
-d.setFont('helvetica','bold');d.setFontSize(10);tx(T);d.text('Terima kasih atas sokongan anda!',W/2,196,{align:'center'});
-d.setFont('helvetica','normal');d.setFontSize(7.5);tx(GR);d.text(co+'  |  '+ADDR,W/2,201,{align:'center'});d.text('Bil ini dijana secara komputer dan tidak memerlukan tandatangan.',W/2,205,{align:'center'});
-try{var bl=d.output('blob'),fn='Bil-'+BL.no+'.pdf',f=new File([bl],fn,{type:'application/pdf'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:fn});toast('PDF dikongsi ✓')}else{var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u)},3000);toast('PDF dimuat turun. Lampirkan di WhatsApp.')}}catch(e){if(!e||e.name!='AbortError')toast('Gagal simpan PDF.')}}
+function nw(n){var o=['','ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN','ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN','SEVENTEEN','EIGHTEEN','NINETEEN'],t=['','','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+function h(x){var s='';if(x>=100){s+=o[Math.floor(x/100)]+' HUNDRED';x%=100;if(x)s+=' AND '}if(x>=20){s+=t[Math.floor(x/10)];if(x%10)s+=' '+o[x%10]}else if(x>0)s+=o[x];return s}
+var r=Math.floor(n+1e-9),c=Math.round((n-r)*100),s='';if(c>=100){r++;c=0}if(r>=1000000)return n2(n)+' ONLY';
+var th=Math.floor(r/1000),rs=r%1000;if(th){s+=h(th)+' THOUSAND';if(rs)s+=rs<100?' AND ':' '}if(rs)s+=h(rs);else if(!th)s+='ZERO';
+if(c)s+=' AND CENTS '+h(c);return s+' ONLY'}
+function bp(){var J=window.jspdf&&window.jspdf.jsPDF;if(!J){toast('PDF belum sedia, cuba sebentar lagi.');return}
+var d=new J({unit:'mm',format:'a4'}),W=210,m=14,co=D.shop||'Abengoh Legacy',tot=0,y=0,L=BL.L;
+function ln(x1,y1,x2,y2,w){d.setDrawColor(0,0,0);d.setLineWidth(w||0.25);d.line(x1,y1,x2,y2)}
+function T(s,x,yy,sz,b,al){d.setFont('helvetica',b?'bold':'normal');d.setFontSize(sz);d.setTextColor(0,0,0);d.text(String(s),x,yy,al?{align:al}:undefined)}
+function head(){T(co,m,17,17,true);T(ADDR,m,23,9);ln(m,30,W-m,30,0.3);
+var bx=m,by=35,bw=96,bh=30;[[bx,by,1,1],[bx+bw,by,-1,1],[bx,by+bh,1,-1],[bx+bw,by+bh,-1,-1]].forEach(function(c){ln(c[0],c[1],c[0]+c[2]*6,c[1],0.3);ln(c[0],c[1],c[0],c[1]+c[3]*6,0.3)});
+T(BL.n||'CASH SALES',bx+4,by+9,10.5,true);if(BL.t)T('TEL : '+BL.t,bx+4,by+bh-4,9);
+T('INVOICE',120,42,13,true);T(': '+BL.no,142,42,13,true);T('Date',120,50,9);T(': '+fdf(BL.d),142,50,9);T('Page',120,56,9);T(':',142,56,9);
+ln(m,70,W-m,70,0.3);T('No',m+1,75,8.5);T('Item Code',m+11,75,8.5);T('Description',m+40,75,8.5);T('Qty',142,75,8.5,false,'right');T('Price/Unit',168,75,8.5,false,'right');T('Amount',W-m-1,75,8.5,false,'right');ln(m,77.5,W-m,77.5,0.3);y=84}
+head();L.forEach(function(x,i){if(y>222){d.addPage();head()}var a=x.k*x.h;tot+=a;T(String(i+1),m+1,y,9);T(String(x.j).toUpperCase(),m+11,y,9);T('Ikan '+x.j,m+40,y,9);T(n2(x.k)+' KG',142,y,9,false,'right');T(n2(x.h),168,y,9,false,'right');T(n2(a),W-m-1,y,9,false,'right');y+=7});
+ln(m,232,W-m,232,0.3);var wl=d.splitTextToSize('Malaysian Ringgit : '+nw(tot),90);for(var q=0;q<wl.length&&q<2;q++)T(wl[q],m+1,238.5+q*4,8.5);T('Total (MYR)',138,239,9.5,true,'right');
+ln(142,233.5,196,233.5,0.4);ln(142,242,196,242,0.4);ln(142,233.5,142,242,0.4);ln(196,233.5,196,242,0.4);T(n2(tot),194,239.4,11,true,'right');ln(m,245,W-m,245,0.3);
+T('Notes :',m+1,251.5,7.5);T('1. All cheques should be crossed and made payable to '+co+'.',m+1,255.5,7.5);T('2. Goods sold are neither returnable nor refundable.',m+1,259.5,7.5);
+if(D.pay){var pl=d.splitTextToSize('3. Payment details: '+D.pay,W-2*m-4);for(var k=0;k<pl.length&&k<3;k++)T(pl[k],m+1,263.5+k*4,7.5)}
+ln(m,277,W-m,277,0.2);T('COMPUTER GENERATED',W/2,283.5,10,true,'center');T('This invoice is computer generated. No signature is required.',W/2,288.5,8,false,'center');
+var n=d.getNumberOfPages();for(var i=1;i<=n;i++){d.setPage(i);T(i+' of '+n,144,56,9)}
+pdfSave(d,'Bil-'+BL.no+'.pdf')}
 function bc(){var t=btxt(),ok=function(){toast('Bil disalin! Tampal di WhatsApp.')},fb=function(){try{var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);ok()}catch(e){toast('Tidak dapat salin.')}};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}}
 var DBH=null,LIVE=false,BT,RM={s:{},e:{},b:{},g:{},k:{},i:{},l:{}},RC='',Q=Promise.resolve(),errT=0,KS=['s','e','b','g','k','i','l'];
 function eh(e){var n=Date.now();if(n-errT>4000){errT=n;toast('Masalah sambungan. Data disimpan dalam peranti.')}$('sy').textContent='sambungan bermasalah'}
